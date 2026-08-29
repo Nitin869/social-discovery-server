@@ -1,0 +1,154 @@
+Social Media App — Project Plan
+A learning project: microservices-based social app with posts, follows, and messaging
+1. Project Overview
+A social media style application (similar in spirit to Facebook/Instagram) built primarily as a backend learning project. The backend is built independently using Java, Spring Boot, and a microservices architecture, covering API Gateway, load balancing, service discovery, and inter-service communication. The frontend will be built separately with AI assistance.
+2. Minimum Viable Features (Version 1)
+User
+Sign up and login
+Profile with name, unique username, photo, bio, and location
+No email verification or password reset in v1
+Posts
+Image upload with caption
+Like count and comment count
+Friends / Connections
+Follow and unfollow — no approval flow required
+Messaging
+One-to-one text messaging only (no group messaging in v1)
+3. Step-by-Step Development Process
+Define Scope — Lock down exact features and explicitly note what is out of scope for version 1.
+Design the Data Model — Sketch core entities and their relationships before writing any code.
+Define Service Boundaries — Decide which entities belong to which microservice.
+Design APIs — Define REST contracts for each service before implementation.
+Pick Infrastructure Pieces — Choose API Gateway, service discovery (e.g. Eureka), and config server.
+Inter-Service Communication — Decide where to use synchronous calls (REST/WebClient) vs asynchronous messaging (Kafka/RabbitMQ).
+Database Strategy — Each microservice gets its own database; plan cross-service consistency (e.g. Saga pattern).
+Security — Set up JWT-based authentication/authorization, either as its own auth service or at the gateway.
+Build One Vertical Slice First — Fully implement the simplest service end-to-end (DB → API → gateway routing) before replicating the pattern.
+Containerize with Docker — Each service and its dependencies run consistently in containers.
+Orchestration & Deployment — Use Docker Compose locally, or Kubernetes for further learning.
+Observability — Add logging, metrics, and tracing across services.
+Resilience Patterns — Add circuit breakers and retries (e.g. Resilience4j).
+Frontend Integration — Connect the AI-assisted frontend to the API Gateway.
+Testing & Iteration — Test end-to-end flows and iterate on features.
+4. Relevant Design Patterns
+Architecture-Level Patterns
+API Gateway — single entry point for all client requests
+Service Discovery (e.g. Eureka) — dynamic lookup of service instances
+Circuit Breaker (Resilience4j) — prevents cascading failures
+Saga Pattern — manages distributed transactions across services
+Backend for Frontend — optional, tailored API layer for the frontend
+Service-Level (OOP) Patterns
+Repository Pattern — data access layer (largely provided by Spring Data JPA)
+Factory Pattern — useful for creating different notification/post types
+Observer Pattern — notifying followers when a user posts
+Strategy Pattern — swappable logic, e.g. feed ranking algorithms
+Messaging Patterns
+Event-Driven Architecture
+Publish/Subscribe — via Kafka or RabbitMQ
+5. Data Model
+Six core entities, grouped into four microservices.
+User
+Field
+Description
+id
+Primary key
+username
+Unique, used for login/profile URL
+name
+Display name
+email
+Used for login
+password
+Hashed password
+bio
+Short text bio
+
+
+Post
+Field
+Description
+id
+Primary key
+userId
+Reference to the posting user
+image
+URL/path to image
+caption
+Text caption
+likeCount
+Integer, can be cached or derived from Like table
+commentCount
+Integer, can be cached or derived from Comment table
+timestamp
+When the post was created
+
+
+Follow
+Field
+Description
+id
+Primary key
+followerId
+User who is following
+followeeId
+User being followed
+timestamp
+When the follow occurred
+
+
+Like
+Field
+Description
+id
+Primary key
+postId
+Reference to the liked post
+userId
+Reference to the user who liked it
+timestamp
+When the like occurred
+
+
+Comment
+Field
+Description
+id
+Primary key
+postId
+Reference to the commented post
+userId
+Reference to the commenting user
+text
+Comment content
+timestamp
+When the comment was made
+
+
+Message
+Field
+Description
+id
+Primary key
+senderId
+Reference to sending user
+receiverId
+Reference to receiving user
+content
+Message text
+timestamp
+When the message was sent
+isRead
+Boolean, optional in v1
+
+
+6. Microservice Boundaries
+User Service
+Owns: User entity. Handles sign up, login, and profile management.
+Post Service
+Owns: Post, Like, Comment entities. Handles image posts, likes, and comments together since they are tightly related and usually queried together.
+Friendship / Connections Service
+Owns: Follow entity. Handles follow/unfollow actions.
+Messaging Service
+Owns: Message entity. Handles one-to-one messaging.
+Each service owns its own database, consistent with standard microservices practice.
+
